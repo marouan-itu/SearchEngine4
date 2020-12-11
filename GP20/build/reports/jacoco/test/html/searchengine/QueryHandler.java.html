@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QueryHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">searchengine</a> &gt; <a href="index.source.html" class="el_package">searchengine</a> &gt; <span class="el_source">QueryHandler.java</span></div><h1>QueryHandler.java</h1><pre class="source lang-java linenums">package searchengine;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Comparator;
+
+public class QueryHandler {
+
+    String searchTerm;
+    Map&lt;String, List&lt;WebPage&gt;&gt; index;
+    List&lt;WebPage&gt; pageList;
+
+<span class="nc" id="L17">    public QueryHandler(String searchTerm, Map&lt;String, List&lt;WebPage&gt;&gt; index, List&lt;WebPage&gt; pageList) {</span>
+<span class="nc" id="L18">        this.searchTerm = searchTerm;</span>
+<span class="nc" id="L19">        this.index = index;</span>
+<span class="nc" id="L20">        this.pageList = pageList;</span>
+<span class="nc" id="L21">    }</span>
+
+    public List&lt;WebPage&gt; getMatchingWebpages(String query) {
+<span class="nc" id="L24">        String[] words2 = query.split(&quot; OR &quot;);</span>
+<span class="nc" id="L25">        Set&lt;WebPage&gt; result = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc" id="L26">        List&lt;String[]&gt; orWords = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        for (String word : words2) {</span>
+<span class="nc" id="L29">            orWords.add(word.trim().toLowerCase().split(&quot; &quot;));</span>
+        }
+
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        for (String[] andWords : orWords) {</span>
+<span class="nc" id="L33">            List&lt;WebPage&gt; andResult = null;</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">            for (String singleWord : andWords) {</span>
+<span class="nc" id="L35">                List&lt;WebPage&gt; result1 = index.get(singleWord);</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">                if (result1 != null) {</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">                    if (andResult == null) {</span>
+<span class="nc" id="L38">                        andResult = new ArrayList&lt;&gt;(result1);</span>
+                    } else {
+<span class="nc" id="L40">                        andResult.retainAll(result1);</span>
+                    }
+                }
+            }
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (andResult != null) {</span>
+<span class="nc" id="L45">                result.addAll(andResult);</span>
+            }
+<span class="nc" id="L47">        }</span>
+
+<span class="nc" id="L49">        List&lt;WebPage&gt; result2 = new ArrayList&lt;&gt;(result);</span>
+<span class="nc" id="L50">        List&lt;WebPage&gt; scoredPages = tfIdf(result2, orWords);</span>
+<span class="nc" id="L51">        return scoredPages;</span>
+    }
+
+    public List&lt;WebPage&gt; rankingAlgorithm(List&lt;WebPage&gt; result2, List&lt;String[]&gt; orWords) {
+<span class="nc" id="L55">        List&lt;WebPage&gt; scoredPages = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        for (var page : result2) {</span>
+<span class="nc" id="L57">            List&lt;String&gt; kwords = page.getKeywords();</span>
+<span class="nc" id="L58">            int keywordsSize = kwords.size();</span>
+<span class="nc" id="L59">            double score = 0;</span>
+<span class="nc" id="L60">            double weightedScore = 0;</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">            for (var orWord : orWords) {</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                for (var wordz : orWord) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                    for (var word : kwords) {</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">                        if (wordz.equals(word)) {</span>
+<span class="nc" id="L65">                            score += 5;</span>
+                        }
+<span class="nc" id="L67">                    }</span>
+                }
+<span class="nc" id="L69">            }</span>
+<span class="nc" id="L70">            weightedScore = score / keywordsSize;</span>
+<span class="nc" id="L71">            page.setScore(weightedScore);</span>
+<span class="nc" id="L72">            scoredPages.add(page);</span>
+<span class="nc" id="L73">        }</span>
+<span class="nc" id="L74">        Comparator&lt;WebPage&gt; c = Comparator.comparing(WebPage::getScore).thenComparing(WebPage::getTitle);</span>
+<span class="nc" id="L75">        Collections.sort(scoredPages, c);</span>
+<span class="nc" id="L76">        Collections.reverse(scoredPages);</span>
+<span class="nc" id="L77">        return scoredPages;</span>
+    }
+
+    public double idfRankingAlgorithm(List&lt;WebPage&gt; pageList, List&lt;WebPage&gt; result2) {
+<span class="nc" id="L81">        var idfscore = pageList.size() / result2.size();</span>
+<span class="nc" id="L82">        return idfscore;</span>
+    }
+
+    public List&lt;WebPage&gt; tfIdf(List&lt;WebPage&gt; result2, List&lt;String[]&gt; orWords) {
+<span class="nc" id="L86">        List&lt;WebPage&gt; finalScoredPages = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        for (WebPage page : rankingAlgorithm(result2, orWords)) {</span>
+<span class="nc" id="L89">            double totalscore = page.getScore() * idfRankingAlgorithm(pageList, result2);</span>
+<span class="nc" id="L90">            page.setfinalScore(totalscore);</span>
+<span class="nc" id="L91">            finalScoredPages.add(page);</span>
+<span class="nc" id="L92">        }</span>
+<span class="nc" id="L93">        return finalScoredPages;</span>
+    }
+}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

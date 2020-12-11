@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Pages.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">searchengine</a> &gt; <a href="index.source.html" class="el_package">searchengine</a> &gt; <span class="el_source">Pages.java</span></div><h1>Pages.java</h1><pre class="source lang-java linenums">package searchengine;
+
+import java.io.IOException;
+import java.util.*;
+
+public class Pages {
+    private final List&lt;WebPage&gt; pageList;
+    private final Map&lt;String, List&lt;WebPage&gt;&gt; index;
+
+<span class="nc" id="L10">    public Pages(String filename) throws IOException {</span>
+<span class="nc" id="L11">        FileReader reader = new FileReader(filename);</span>
+<span class="nc" id="L12">        pageList = reader.readFile();</span>
+<span class="nc" id="L13">        this.index = populateIndex(pageList);</span>
+<span class="nc" id="L14">    }</span>
+
+    public List&lt;WebPage&gt; search(String searchTerm) {
+<span class="nc" id="L17">        QueryHandler query = new QueryHandler(searchTerm, index, pageList);</span>
+<span class="nc" id="L18">        List&lt;WebPage&gt; finalQuery = query.getMatchingWebpages(searchTerm);</span>
+<span class="nc" id="L19">        return finalQuery;</span>
+    }
+
+    private static Map&lt;String, List&lt;WebPage&gt;&gt; populateIndex(List&lt;WebPage&gt; pageList) {
+<span class="nc" id="L23">        Map&lt;String, List&lt;WebPage&gt;&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L24" title="All 2 branches missed.">        for (var page : pageList) {</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">            for (String keyword : page.getKeywords()) {</span>
+<span class="nc" id="L26">                String word = keyword.toLowerCase();</span>
+<span class="nc" id="L27">                List&lt;WebPage&gt; pages = result.get(word);</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">                if (pages == null) {</span>
+<span class="nc" id="L29">                    pages = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L30">                    result.put(word, pages);</span>
+                }
+<span class="nc bnc" id="L32" title="All 2 branches missed.">                if (!pages.contains(page)) {</span>
+<span class="nc" id="L33">                    pages.add(page);</span>
+                }
+<span class="nc" id="L35">            }</span>
+<span class="nc" id="L36">        }</span>
+<span class="nc" id="L37">        return Map.copyOf(result);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

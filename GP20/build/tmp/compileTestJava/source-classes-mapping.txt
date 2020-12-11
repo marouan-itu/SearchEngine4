@@ -1,0 +1,10 @@
+searchengine/FileReaderTest.java
+ searchengine.FileReaderTest
+searchengine/QueryHandlerTest.java
+ searchengine.QueryHandlerTest
+searchengine/PagesTest.java
+ searchengine.PagesTest
+searchengine/WebPageTest.java
+ searchengine.WebPageTest
+searchengine/WebServerTest.java
+ searchengine.WebServerTest
